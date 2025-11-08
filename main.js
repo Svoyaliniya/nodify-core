@@ -1,26 +1,20 @@
-// main.js — Entry point of the project
-
-// Load environment variables from .env file
-import 'dotenv/config'
+// main.js — Core module exports for nodify-core
 
 // Import required functions from local modules
 import { searchSongs } from './func/genius-api-part.js'
-import { searchAlbums, getPlaylistByUrl, getTracksFromAlbum } from './func/spotify-api-module.js'
+import { searchAlbums, getPlaylistByUrl, getTrackMetadata, getTracksFromAlbum } from './func/spotify-api-module.js'
 import { downloadTrack, downloadAlbum } from './func/yt-dlp-part.js'
 
-// Your search query (can be artist, song, album, or playlist URL)
-const query = "Enter your search query here"
+export {
+    // All exported functions with detailed descriptions:
 
-;(async () => {
-    // Uncomment the lines below to test different functionalities:
-
-    // await searchSongs(query)              // Search for songs
-    // await searchAlbums(query)             // Search for albums
-    // await getTracksFromAlbum(query)       // Get all tracks
-    // await getPlaylistByUrl(query, 1)      // Get playlist details from a Spotify URL
-
-    await downloadTrack(query)               // Download a single track
-
-    // await downloadAlbum(query, false)     // Download all tracks from an album
-    // await downloadAlbum(query, true)      // Download all tracks from a Spotify playlist
-})()
+    searchSongs,            // Search for songs | (query, limit=10, showLogs=true)
+    
+    searchAlbums,           // Search for albums | (query, limit=10, showLogs=true)
+    getPlaylistByUrl,       // Get playlist details from a Spotify URL | (query, showLogs=true)
+    getTrackMetadata,       // Get metadata for a track (query)
+    getTracksFromAlbum,     // Get all tracks from an album | (query, showLogs=true)
+    
+    downloadTrack,          // Download a single track (query
+    downloadAlbum           // Download all tracks from an album | (query, type=false)
+}

@@ -14,18 +14,18 @@ export function getCurrentOS() {
   const arch = os.arch()
 
   if (platform === 'win32') {
-    return './yt-dlp/yt-dlp_win.exe'
+    return 'yt-dlp_win.exe'
 
   } else if (platform === 'darwin') {
-    return './yt-dlp/yt-dlp_macos'
+    return 'yt-dlp_macos'
 
   } else if (platform === 'linux') {
     if (arch === 'x64') {
-      return './yt-dlp/yt-dlp_linux'
+      return 'yt-dlp_linux'
     } else if (arch === 'arm') {
-      return './yt-dlp/yt-dlp_linux_armv7l'
+      return 'yt-dlp_linux_armv7l'
     } else if (arch === 'arm64') {
-      return './yt-dlp/yt-dlp_linux_aarch64'
+      return 'yt-dlp_linux_aarch64'
     } else {
       throw new Error('❌ Unsupported Linux architecture')
     }

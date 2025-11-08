@@ -1,5 +1,6 @@
 // import all required modules
 import SpotifyWebApi from 'spotify-web-api-node'
+import 'dotenv/config'
 
 async function authorize() {
   /* 
@@ -15,23 +16,37 @@ async function authorize() {
   return spotifyApi // Return the authorized Spotify API instance
 }
 
-export async function searchAlbums(query) {
+export async function searchAlbums(query, limit=10, showLogs=true) {
   /* 
   This function searches for albums based on a query string using Spotify_API.
   */
 
   const spotifyApi = await authorize() // Authorize the Spotify API
 
-  const result = await spotifyApi.searchAlbums(query, { limit: 10 }) // "limit: 10" - Limit the number of results to 10
+  const result = await spotifyApi.searchAlbums(query, { limit: limit }) // "limit" - Limit the number of results to 10
+  
+  let data = []
 
-  result.body.albums.items.forEach((album, index) => {
-    const albumName = album.name
-    const artist = album.artists.map(a => a.name).join(', ')
-    console.log(`${index+1}. 💿 ${albumName} — ${artist}`) // What will be displayed
-  })
+  try { 
+    result.body.albums.items.forEach((album, index) => {
+      const albumName = album.name
+      const artist = album.artists.map(a => a.name).join(', ')
+      
+      if (showLogs) { // If showLogs is true, display the search results in the console
+        console.log(`${index+1}. 💿 ${albumName} — ${artist}`) // What will be displayed
+      }
+
+      data.push({ id: index, name: albumName, artist: artist }) // Push album data to the array
+    })
+
+    return data // Return index, name, artist of found albums
+  } catch (e) { 
+    console.error("Error fetching data from Spotify: ", result)
+  }
+  
 }
 
-export async function getPlaylistByUrl(url) {
+export async function getPlaylistByUrl(url, showLogs=true) {
   /* 
   This function finds a playlist by URL. 
   */
@@ -41,23 +56,42 @@ export async function getPlaylistByUrl(url) {
   const regex = /playlist\/([a-zA-Z0-9]+)/
   const match = url.match(regex)
   if (!match) {
-    console.log("❌Invalid link")
-    return
+    if (showLogs) { // If showLogs is true, display error message in the console
+      console.log("❌Invalid link")
+    }
+    return('Error: Invalid link!')
   }
 
   const playlistId = match[1]
   const data = await spotifyApi.getPlaylist(playlistId)
 
   const playlist = data.body // Get the playlist data (playlist name, owner, tracks, etc.)
+  let result = []
 
-  console.log(`💽 playlist: ${playlist.name} 👤 author: ${playlist.owner.display_name} 🎵 songs:`) // What will be displayed
-  playlist.tracks.items.forEach((item, index) => {  
-    const track = item.track
-    const artists = track.artists.map(a => a.name).join(', ')
-    console.log(`${index+1}. 🎵 ${track.name} — ${artists}`)
-  })
+  try {
+    
+    const playlistName = playlist.name
+    const playlistOwner = playlist.owner.display_name
 
-  return playlist, 1 // Return the playlist data, 1 - if the playlist is found
+    
+    if (showLogs) { // If showLogs is true, display error message in the console
+      console.log(`💽 playlist: ${playlistName} 👤 author: ${playlistOwner} 🎵 songs:`) // What will be displayed
+    }
+
+    playlist.tracks.items.forEach((item, index) => {  
+      const track = item.track
+      const artists = track.artists.map(a => a.name).join(', ')
+      if (showLogs) { // If showLogs is true, display error message in the console
+        console.log(`${index+1}. 🎵 ${track.name} — ${artists}`)
+      }
+
+      result.push({ id: index, name: track.name, artist: artists, playlist: playlistName, owner: playlistOwner}) // Push track data to the array
+    })
+  } catch (e) { 
+    console.log("Error fetching playlist tracks from Spotify: ", e)
+  }
+
+  return playlist.name, playlist.owner.display_name, result // Return the playlist data
 }
 
 export async function getTrackMetadata(query) {
@@ -81,7 +115,7 @@ export async function getTrackMetadata(query) {
   return metadata // Return the metadata (title, artist, album, coverUrl)
 }
 
-export async function getTracksFromAlbum(query) {
+export async function getTracksFromAlbum(query, showLogs=true) {
   /* 
   This function retrieves tracks from an album using Spotify_API.
   */
@@ -90,17 +124,29 @@ export async function getTracksFromAlbum(query) {
 
   const res = await spotifyApi.searchAlbums(query, { limit: 1 })
   if (!res.body.albums.items.length) {
-    console.log('❌Album not found')
-    return []
+    if (showLogs) { 
+      console.log('❌Album not found')
+    }
+    return('Error: Album not found!')
   }
 
-  const albumId = res.body.albums.items[0].id
-  const album = (await spotify.getAlbum(albumId)).body
+  try {
+    const albumId = res.body.albums.items[0].id
+    const album = (await spotifyApi.getAlbum(albumId)).body
 
-  const artist = album.artists.map(a => a.name).join(', ') // Artist name
-  const tracks = album.tracks.items // Tracks in the album
+    const artist = album.artists.map(a => a.name).join(', ') // Artist name
+    const tracks = album.tracks.items // Tracks in the album
 
-  return tracks.map(track => ({title: track.name, artist: artist, album: album.name,})) // Return an array of track objects with title, artist, and album
+    if (showLogs) {
+      tracks.forEach((track, index) => {
+        console.log(`${index+1}. 🎵 ${track.name} — ${artist} 💽 ${album.name}`) // What will be displayed
+      })
+    }
+
+    return tracks.map(track => ({title: track.name, artist: artist, album: album.name,})) // Return an array of track objects with title, artist, and album
+  } catch (e) { 
+    console.error("Error fetching album tracks from Spotify: ", e)
+  }
 }
 
 export async function getTracksFromUserAlbum(url) {
@@ -109,12 +155,12 @@ export async function getTracksFromUserAlbum(url) {
 
   The getPlaylistByUrl function described above is used.
   */
+  
 
   const playlist = await getPlaylistByUrl(url, 0) // Get the playlist by URL
 
-  const tracks = playlist.tracks.items 
+  const tracks = playlist
+  console.log(tracks)
     
-    return tracks.map(item => ({ title: item.track.name, artist: item.track.artists.map(a => a.name).join(', '), album: item.track.album.name })) // Return an array of track objects with title, artist, and album
-
-  
+  return tracks.map(item => ({ title: item.track.name, artist: item.track.artists.map(a => a.name).join(', '), album: item.track.album.name })) // Return an array of track objects with title, artist, and album
 }

@@ -1,13 +1,22 @@
 // import all required modules
-import { exec } from 'child_process'
 import { promisify } from 'util'
 import { getCurrentOS } from './get-os.js'
 import { findUrl } from './yt-search-module.js'
 import { writeTags } from './node-id3-module.js'
 import { getTracksFromAlbum, getTracksFromUserAlbum } from './spotify-api-module.js'
-import ffmpegPath from 'ffmpeg-static'
 
-const execAsync = promisify(exec)
+import { fileURLToPath } from 'url'
+import path from 'path'
+import { exec as execCallback } from 'child_process'
+
+const execAsync = promisify(execCallback)
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+// Пути
+const ytdlpPath = path.resolve(__dirname, `../yt-dlp/${getCurrentOS()}`)
+const ffmpegPath = path.resolve(__dirname, '../node_modules/ffmpeg-static/ffmpeg')
 
 export async function downloadTrack(query) {
   /*
@@ -21,7 +30,7 @@ export async function downloadTrack(query) {
     url = `ytsearch:${query}`
   }
 
-  const command = `${getCurrentOS()} -x --audio-format mp3 --ffmpeg-location "${ffmpegPath}" -o "track.%(ext)s" "${url}"`
+  const command = `"${ytdlpPath}" -x --audio-format mp3 --ffmpeg-location "${ffmpegPath}" -o "track.%(ext)s" "${url}"`
 
   try {
     await execAsync(command)

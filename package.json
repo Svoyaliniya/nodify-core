@@ -1,18 +1,19 @@
 {
-  "name": "spotify_in_telegram",
-  "version": "1.0.0",
+  "name": "nodify-core",
+  "version": "2.0",
   "type": "module",
   "main": "main.js",
   "scripts": {
-    "start": "node main.js"
+    "test": "node test.js"
   },
   "keywords": [],
-  "author": "stanislav bandurovskiy",
-  "license": "ISC",
-  "description": "",
+  "author": "https://github.com/Svoyaliniya",
+  "license": "MIT",
+  "description": "A simple Node.js module for searching and downloading Spotify tracks using a fully legal method.",
   "dependencies": {
     "dotenv": "^17.2.0",
     "ffmpeg-static": "^5.2.0",
+    "form-data": "^4.0.4",
     "node-fetch": "^3.3.2",
     "node-id3": "^0.2.9",
     "spotify-web-api-node": "^5.0.2",
